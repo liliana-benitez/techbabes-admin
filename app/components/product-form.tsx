@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, ChangeEvent } from "react"
+import { useState, ChangeEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -16,7 +16,6 @@ import { Plus, Trash2, AlertCircle, CheckCircle } from "lucide-react"
 import Image from "next/image"
 
 const CATEGORIES = ["CLOTHING", "HATS", "ACCESSORIES", "MUGS"]
-const SINGLE_VARIANT_CATEGORIES = ["HATS", "MUGS"]
 
 interface FormData {
   name: string
@@ -59,22 +58,10 @@ export default function ProductForm() {
     price: ""
   })
   const [imageUrl, setImageUrl] = useState<string>("")
+  const [hasVariants, setHasVariants] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>("")
   const [success, setSuccess] = useState<string>("")
-
-  // Reset variant form if category is single-variant type
-  useEffect(() => {
-    if (SINGLE_VARIANT_CATEGORIES.includes(formData.category)) {
-      setCurrentVariant({
-        size: "",
-        color: "",
-        printfulVariantId: "",
-        price: ""
-      })
-      setVariants([])
-    }
-  }, [formData.category])
 
   const handleFormChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -112,60 +99,49 @@ export default function ProductForm() {
   }
 
   const handleAddVariant = () => {
-    if (SINGLE_VARIANT_CATEGORIES.includes(formData.category)) {
-      // For single-variant items, just need printful ID
-      if (!currentVariant.printfulVariantId.trim()) {
-        setError("Printful Variant ID is required")
-        return
-      }
-      setVariants([
-        {
-          printfulVariantId: parseInt(currentVariant.printfulVariantId),
-          price: currentVariant.price
-            ? parseFloat(currentVariant.price)
-            : parseFloat(formData.price),
-          size: null,
-          color: null
-        }
-      ])
-      setCurrentVariant({
-        size: "",
-        color: "",
-        printfulVariantId: "",
-        price: ""
-      })
-    } else {
-      // For multi-variant items
-      if (!currentVariant.printfulVariantId.trim()) {
-        setError("Printful Variant ID is required")
-        return
-      }
-      setVariants((prev) => [
-        ...prev,
-        {
-          size: currentVariant.size || null,
-          color: currentVariant.color || null,
-          printfulVariantId: parseInt(currentVariant.printfulVariantId),
-          price: currentVariant.price
-            ? parseFloat(currentVariant.price)
-            : parseFloat(formData.price)
-        }
-      ])
-      setCurrentVariant({
-        size: "",
-        color: "",
-        printfulVariantId: "",
-        price: ""
-      })
-      setError("")
+    if (!currentVariant.printfulVariantId.trim()) {
+      setError("Printful Variant ID is required")
+      return
     }
+    setVariants((prev) => [
+      ...prev,
+      {
+        size: currentVariant.size || null,
+        color: currentVariant.color || null,
+        printfulVariantId: parseInt(currentVariant.printfulVariantId),
+        price: currentVariant.price
+          ? parseFloat(currentVariant.price)
+          : parseFloat(formData.price)
+      }
+    ])
+    setCurrentVariant({
+      size: "",
+      color: "",
+      printfulVariantId: "",
+      price: ""
+    })
+    setError("")
   }
 
   const handleRemoveVariant = (index: number) => {
     setVariants((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = async () => {
+  const handleToggleVariants = (enabled: boolean) => {
+    setHasVariants(enabled)
+    if (!enabled) {
+      setVariants([])
+      setCurrentVariant({
+        size: "",
+        color: "",
+        printfulVariantId: "",
+        price: ""
+      })
+    }
+  }
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
     setError("")
     setSuccess("")
     if (
@@ -179,13 +155,13 @@ export default function ProductForm() {
       return
     }
 
-    if (variants.length === 0) {
-      setError("Please add at least one variant")
+    if (formData.images.length === 0) {
+      setError("Please add at least one image")
       return
     }
 
-    if (formData.images.length === 0) {
-      setError("Please add at least one image")
+    if (hasVariants && variants.length === 0) {
+      setError("Please add at least one variant")
       return
     }
 
@@ -198,7 +174,7 @@ export default function ProductForm() {
         category: formData.category,
         price: parseFloat(formData.price),
         images: formData.images,
-        variants: variants,
+        variants: hasVariants ? variants : [],
         printfulSyncId: formData.printfulSyncId
       }
 
@@ -219,7 +195,6 @@ export default function ProductForm() {
       await response.json()
       setSuccess("Product created successfully!")
 
-      // Reset form
       setFormData({
         name: "",
         description: "",
@@ -235,6 +210,7 @@ export default function ProductForm() {
         printfulVariantId: "",
         price: ""
       })
+      setHasVariants(false)
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Something went wrong"
@@ -243,8 +219,6 @@ export default function ProductForm() {
       setLoading(false)
     }
   }
-
-  const isSingleVariant = SINGLE_VARIANT_CATEGORIES.includes(formData.category)
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-6">
@@ -269,13 +243,7 @@ export default function ProductForm() {
               </div>
             )}
 
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                handleSubmit()
-              }}
-              className="space-y-6"
-            >
+            <div className="space-y-6">
               {/* Basic Info */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-slate-900">
@@ -406,120 +374,143 @@ export default function ProductForm() {
 
               {/* Variants */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-slate-900">
-                  {isSingleVariant ? "Variant" : "Variants"}
-                </h3>
-
-                <div className="grid gap-4">
-                  {!isSingleVariant && (
-                    <>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Size
-                          </label>
-                          <Input
-                            type="text"
-                            name="size"
-                            value={currentVariant.size}
-                            onChange={handleVariantChange}
-                            placeholder="e.g., M, L, XL"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Color
-                          </label>
-                          <Input
-                            type="text"
-                            name="color"
-                            value={currentVariant.color}
-                            onChange={handleVariantChange}
-                            placeholder="e.g., Blue, Red"
-                          />
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Printful Variant ID *
-                      </label>
-                      <Input
-                        type="number"
-                        name="printfulVariantId"
-                        value={currentVariant.printfulVariantId}
-                        onChange={handleVariantChange}
-                        placeholder="e.g., 12345"
-                        required
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-slate-900">
+                    Variants
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-slate-600">
+                      {hasVariants ? "Enabled" : "Disabled (O/S)"}
+                    </span>
+                    <button
+                      onClick={() => handleToggleVariants(!hasVariants)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        hasVariants ? "bg-slate-900" : "bg-slate-300"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          hasVariants ? "translate-x-6" : "translate-x-1"
+                        }`}
                       />
+                    </button>
+                  </div>
+                </div>
+
+                {hasVariants ? (
+                  <div className="grid gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Size
+                        </label>
+                        <Input
+                          type="text"
+                          name="size"
+                          value={currentVariant.size}
+                          onChange={handleVariantChange}
+                          placeholder="e.g., M, L, XL"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Color
+                        </label>
+                        <Input
+                          type="text"
+                          name="color"
+                          value={currentVariant.color}
+                          onChange={handleVariantChange}
+                          placeholder="e.g., Blue, Red"
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Variant Price (optional, uses base price if empty)
-                      </label>
-                      <Input
-                        type="number"
-                        name="price"
-                        value={currentVariant.price}
-                        onChange={handleVariantChange}
-                        placeholder="0.00"
-                        step="0.01"
-                        min="0"
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Printful Variant ID *
+                        </label>
+                        <Input
+                          type="number"
+                          name="printfulVariantId"
+                          value={currentVariant.printfulVariantId}
+                          onChange={handleVariantChange}
+                          placeholder="e.g., 12345"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Variant Price (optional, uses base price if empty)
+                        </label>
+                        <Input
+                          type="number"
+                          name="price"
+                          value={currentVariant.price}
+                          onChange={handleVariantChange}
+                          placeholder="0.00"
+                          step="0.01"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={handleAddVariant}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Variant
+                    </Button>
+
+                    {/* Variants List */}
+                    <div className="space-y-2">
+                      {variants.map((variant, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg"
+                        >
+                          <div className="text-sm">
+                            <p className="font-medium text-slate-900">
+                              {variant.size && variant.color
+                                ? `${variant.size} - ${variant.color}`
+                                : variant.size
+                                ? `Size: ${variant.size}`
+                                : variant.color
+                                ? `Color: ${variant.color}`
+                                : "Variant"}
+                            </p>
+                            <p className="text-slate-600">
+                              ID: {variant.printfulVariantId} | Price: $
+                              {variant.price.toFixed(2)}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleRemoveVariant(idx)}
+                            className="text-red-500 hover:text-red-700 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   </div>
-
-                  <Button
-                    onClick={handleAddVariant}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Variant
-                  </Button>
-                </div>
-
-                {/* Variants List */}
-                <div className="space-y-2">
-                  {variants.map((variant, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg"
-                    >
-                      <div className="text-sm">
-                        <p className="font-medium text-slate-900">
-                          {variant.size && variant.color
-                            ? `${variant.size} - ${variant.color}`
-                            : variant.size
-                            ? `Size: ${variant.size}`
-                            : variant.color
-                            ? `Color: ${variant.color}`
-                            : "Single Variant"}
-                        </p>
-                        <p className="text-slate-600">
-                          ID: {variant.printfulVariantId} | Price: $
-                          {variant.price.toFixed(2)}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleRemoveVariant(idx)}
-                        className="text-red-500 hover:text-red-700 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                ) : (
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                    <p className="text-sm text-slate-600">
+                      This product will be listed as One Size (O/S) with no
+                      variant options.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Submit Button */}
               <Button
-                type="submit"
                 onClick={handleSubmit}
                 disabled={loading}
                 className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2"
@@ -527,7 +518,7 @@ export default function ProductForm() {
               >
                 {loading ? "Creating Product..." : "Create Product"}
               </Button>
-            </form>
+            </div>
           </CardContent>
         </Card>
       </div>

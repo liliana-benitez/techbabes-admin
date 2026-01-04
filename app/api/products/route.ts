@@ -20,13 +20,12 @@ export async function POST(request: NextRequest) {
       !category ||
       !price ||
       !images ||
-      !variants ||
       !printfulSyncId
     ) {
       return NextResponse.json(
         {
           error:
-            "Missing required fields: name, description, category, price, printfulSyncId, images, variants"
+            "Missing required fields: name, description, category, price, printfulSyncId, images"
         },
         { status: 400 }
       )
@@ -41,14 +40,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!Array.isArray(variants) || variants.length === 0) {
-      return NextResponse.json(
-        {
-          error: "At least one variant is required"
-        },
-        { status: 400 }
-      )
-    }
+    // Variants is now optional - default to empty array
+    const variantsArray = Array.isArray(variants) ? variants : []
 
     const validCategories = ["CLOTHING", "HATS", "ACCESSORIES", "MUGS"]
     if (!validCategories.includes(category)) {
@@ -71,8 +64,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate variants
-    for (const variant of variants) {
+    // Validate variants if provided
+    for (const variant of variantsArray) {
       if (
         !variant.printfulVariantId ||
         typeof variant.printfulVariantId !== "number"
@@ -104,7 +97,7 @@ export async function POST(request: NextRequest) {
       category,
       price,
       images,
-      variants,
+      variants: variantsArray,
       printfulSyncId: parseInt(printfulSyncId)
     })
 
