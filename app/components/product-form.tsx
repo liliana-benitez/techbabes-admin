@@ -23,6 +23,7 @@ interface FormData {
   description: string
   category: string
   price: string
+  printfulSyncId: string
   images: string[]
 }
 
@@ -46,7 +47,8 @@ export default function ProductForm() {
     description: "",
     category: "",
     price: "",
-    images: []
+    images: [],
+    printfulSyncId: ""
   })
 
   const [variants, setVariants] = useState<Variant[]>([])
@@ -166,13 +168,12 @@ export default function ProductForm() {
   const handleSubmit = async () => {
     setError("")
     setSuccess("")
-
-    // Validation
     if (
       !formData.name.trim() ||
       !formData.description.trim() ||
       !formData.category ||
-      !formData.price
+      !formData.price ||
+      !formData.printfulSyncId
     ) {
       setError("Please fill in all required fields")
       return
@@ -197,10 +198,12 @@ export default function ProductForm() {
         category: formData.category,
         price: parseFloat(formData.price),
         images: formData.images,
-        variants: variants
+        variants: variants,
+        printfulSyncId: formData.printfulSyncId
       }
 
-      // Replace with your actual API endpoint
+      console.log({ payload })
+
       const response = await fetch("/api/products", {
         method: "POST",
         headers: {
@@ -213,7 +216,7 @@ export default function ProductForm() {
         throw new Error("Failed to create product")
       }
 
-      const data = await response.json()
+      await response.json()
       setSuccess("Product created successfully!")
 
       // Reset form
@@ -222,7 +225,8 @@ export default function ProductForm() {
         description: "",
         category: "",
         price: "",
-        images: []
+        images: [],
+        printfulSyncId: ""
       })
       setVariants([])
       setCurrentVariant({
@@ -232,7 +236,9 @@ export default function ProductForm() {
         price: ""
       })
     } catch (err) {
-      setError(err.message || "Something went wrong")
+      const errorMessage =
+        err instanceof Error ? err.message : "Something went wrong"
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -241,29 +247,35 @@ export default function ProductForm() {
   const isSingleVariant = SINGLE_VARIANT_CATEGORIES.includes(formData.category)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-2xl mx-auto">
         <Card className="shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-t-lg">
+          <CardHeader className="bg-linear-to-r from-slate-900 to-slate-800 text-white rounded-t-lg">
             <CardTitle className="text-2xl">Add New Product</CardTitle>
           </CardHeader>
 
           <CardContent className="p-6">
             {error && (
               <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
                 <p className="text-red-700 text-sm">{error}</p>
               </div>
             )}
 
             {success && (
               <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
                 <p className="text-green-700 text-sm">{success}</p>
               </div>
             )}
 
-            <div className="space-y-6">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleSubmit()
+              }}
+              className="space-y-6"
+            >
               {/* Basic Info */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-slate-900">
@@ -337,6 +349,21 @@ export default function ProductForm() {
                       required
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Printful Sync ID *
+                    </label>
+                    <Input
+                      type="number"
+                      name="printfulSyncId"
+                      value={formData.printfulSyncId}
+                      onChange={handleFormChange}
+                      placeholder="e.g., 12345"
+                      min="0"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -361,8 +388,8 @@ export default function ProductForm() {
                     <div key={idx} className="relative group">
                       <Image
                         src={img}
-                        width={200}
                         height={200}
+                        width={200}
                         alt={`Product ${idx + 1}`}
                         className="w-full h-32 object-cover rounded-lg border border-slate-200"
                       />
@@ -492,6 +519,7 @@ export default function ProductForm() {
 
               {/* Submit Button */}
               <Button
+                type="submit"
                 onClick={handleSubmit}
                 disabled={loading}
                 className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2"
@@ -499,7 +527,7 @@ export default function ProductForm() {
               >
                 {loading ? "Creating Product..." : "Create Product"}
               </Button>
-            </div>
+            </form>
           </CardContent>
         </Card>
       </div>
