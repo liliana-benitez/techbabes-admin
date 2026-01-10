@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tech Babes Admin
 
-## Getting Started
+This is an internal dashboard I built for [Tech Babes](https://techbabes.dev/), my e-commerce brand for women in tech.
+Right now, it helps me view and manage inventory in one place without relying solely on Etsy or Printful dashboards, since I am also creating my own shop frontend.
 
-First, run the development server:
+The long-term goal is for this to become a central control panel for the business, with insights and stats coming next.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## What It Does (So Far)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- View current inventory
+- Update inventory easily
+- Simple UI
+- Built as a private/internal tool
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Planned Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Sales and inventory stats
+- Basic analytics (what’s selling, what’s not)
+- Trends over time
+- Possibly other internal admin tools as the shop grows
 
-## Learn More
+## 🛠 Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+- Next.js
+- TypeScript
+- Prisma
+- Supabase(SQL)
+- Tailwind CSS
+- Shadcn
+- Framer Motion
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Why I Built This
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+I wanted a lightweight, custom dashboard tailored exactly to my needs. Something simple, fast, and pleasant to use. It’s also a way for me to practice building real internal tools that connect frontend, backend, and database logic in a clean way.
 
-## Deploy on Vercel
+## 🚧 Status
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is actively evolving. Inventory management is live, and stats/analytics are planned next.
