@@ -1,5 +1,10 @@
-import { createNewProduct } from "@/lib/db/product-repository"
+import { createNewProduct, getAllProducts } from "@/lib/db/product-repository"
 import { NextRequest, NextResponse } from "next/server"
+
+export async function GET() {
+  const products = await getAllProducts()
+  return NextResponse.json(products)
+}
 
 export async function POST(request: NextRequest) {
   try {

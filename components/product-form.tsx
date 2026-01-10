@@ -4,7 +4,7 @@ import { useState, ChangeEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Select,
   SelectContent,
@@ -40,7 +40,11 @@ interface CurrentVariant {
   price: string
 }
 
-export default function ProductForm() {
+type ProductFormProps = {
+  onSuccess: () => void
+}
+
+export default function ProductForm({ onSuccess }: ProductFormProps) {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     description: "",
@@ -178,8 +182,6 @@ export default function ProductForm() {
         printfulSyncId: formData.printfulSyncId
       }
 
-      console.log({ payload })
-
       const response = await fetch("/api/products", {
         method: "POST",
         headers: {
@@ -211,6 +213,7 @@ export default function ProductForm() {
         price: ""
       })
       setHasVariants(false)
+      onSuccess()
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Something went wrong"
@@ -221,13 +224,9 @@ export default function ProductForm() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center">
       <div className="max-w-2xl mx-auto">
         <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl">Add New Product</CardTitle>
-          </CardHeader>
-
           <CardContent className="p-6">
             {error && (
               <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
