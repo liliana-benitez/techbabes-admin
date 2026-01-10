@@ -221,10 +221,10 @@ export default function ProductForm() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center">
       <div className="max-w-2xl mx-auto">
         <Card className="shadow-lg">
-          <CardHeader className="bg-linear-to-r from-slate-900 to-slate-800 text-white rounded-t-lg">
+          <CardHeader>
             <CardTitle className="text-2xl">Add New Product</CardTitle>
           </CardHeader>
 
@@ -467,7 +467,7 @@ export default function ProductForm() {
                       Add Variant
                     </Button>
 
-                    {/* Variants List */}
+                    {/* Variants */}
                     <div className="space-y-2">
                       {variants.map((variant, idx) => (
                         <div
@@ -509,11 +509,10 @@ export default function ProductForm() {
                 )}
               </div>
 
-              {/* Submit Button */}
               <Button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2"
+                className="btn-primary w-full"
                 size="lg"
               >
                 {loading ? "Creating Product..." : "Create Product"}
