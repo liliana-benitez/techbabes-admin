@@ -33,6 +33,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog"
 import ProductForm from "@/components/product-form"
+import { ScrollArea } from "@radix-ui/react-scroll-area"
 
 export default function ProductList() {
   const [products, setProducts] = useState<ProductWithVariants[] | []>([])
@@ -77,12 +78,13 @@ export default function ProductList() {
               </Button>
             </DialogTrigger>
 
-            <DialogContent className="max-w-3xl">
-              <DialogHeader>
+            <DialogContent className="max-w-3xl max-h-[90vh] p-0 flex flex-col overflow-hidden">
+              <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
                 <DialogTitle>Add Product</DialogTitle>
               </DialogHeader>
-              {/* <AddProductForm onSuccess={() => setIsAddOpen(false)} /> */}
-              <ProductForm onSuccess={() => setIsAddOpen(false)} />
+              <div className="flex-1 overflow-y-auto px-6 pb-6">
+                <ProductForm onSuccess={() => setIsAddOpen(false)} />
+              </div>
             </DialogContent>
           </Dialog>
         </div>

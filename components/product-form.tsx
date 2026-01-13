@@ -113,9 +113,7 @@ export default function ProductForm({ onSuccess }: ProductFormProps) {
         size: currentVariant.size || null,
         color: currentVariant.color || null,
         printfulVariantId: parseInt(currentVariant.printfulVariantId),
-        price: currentVariant.price
-          ? parseFloat(currentVariant.price)
-          : parseFloat(formData.price)
+        price: parseFloat(formData.price)
       }
     ])
     setCurrentVariant({
@@ -224,302 +222,283 @@ export default function ProductForm({ onSuccess }: ProductFormProps) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="max-w-2xl mx-auto">
-        <Card className="shadow-lg">
-          <CardContent className="p-6">
-            {error && (
-              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
-                <p className="text-red-700 text-sm">{error}</p>
-              </div>
-            )}
+    <div className="w-full">
+      <Card className="shadow-lg w-full">
+        <CardContent className="p-6">
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          )}
 
-            {success && (
-              <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
-                <p className="text-green-700 text-sm">{success}</p>
-              </div>
-            )}
+          {success && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+              <p className="text-green-700 text-sm">{success}</p>
+            </div>
+          )}
 
-            <div className="space-y-6">
-              {/* Basic Info */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-slate-900">
-                  Basic Information
-                </h3>
+          <div className="space-y-6">
+            {/* Basic Info */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Basic Information
+              </h3>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Product Name *
+                </label>
+                <Input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleFormChange}
+                  placeholder="e.g., Classic T-Shirt"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Description *
+                </label>
+                <Textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleFormChange}
+                  placeholder="Describe your product..."
+                  rows={4}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Category *
+                  </label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, category: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Product Name *
+                    Base Price ($) *
                   </label>
                   <Input
-                    type="text"
-                    name="name"
-                    value={formData.name}
+                    type="number"
+                    name="price"
+                    value={formData.price}
                     onChange={handleFormChange}
-                    placeholder="e.g., Classic T-Shirt"
+                    placeholder="0.00"
+                    step="0.01"
+                    min="0"
                     required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Description *
+                    Printful Sync ID *
                   </label>
-                  <Textarea
-                    name="description"
-                    value={formData.description}
+                  <Input
+                    type="number"
+                    name="printfulSyncId"
+                    value={formData.printfulSyncId}
                     onChange={handleFormChange}
-                    placeholder="Describe your product..."
-                    rows={4}
+                    placeholder="e.g., 12345"
+                    min="0"
                     required
                   />
                 </div>
+              </div>
+            </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Category *
-                    </label>
-                    <Select
-                      value={formData.category}
-                      onValueChange={(value) =>
-                        setFormData((prev) => ({ ...prev, category: value }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CATEGORIES.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+            {/* Images */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-900">Images</h3>
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Base Price ($) *
-                    </label>
-                    <Input
-                      type="number"
-                      name="price"
-                      value={formData.price}
-                      onChange={handleFormChange}
-                      placeholder="0.00"
-                      step="0.01"
-                      min="0"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Printful Sync ID *
-                    </label>
-                    <Input
-                      type="number"
-                      name="printfulSyncId"
-                      value={formData.printfulSyncId}
-                      onChange={handleFormChange}
-                      placeholder="e.g., 12345"
-                      min="0"
-                      required
-                    />
-                  </div>
-                </div>
+              <div className="flex gap-2">
+                <Input
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="Paste image URL from Supabase..."
+                />
+                <Button onClick={handleAddImage} variant="outline" size="sm">
+                  <Plus className="w-4 h-4" />
+                </Button>
               </div>
 
-              {/* Images */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-slate-900">Images</h3>
-
-                <div className="flex gap-2">
-                  <Input
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="Paste image URL from Supabase..."
-                  />
-                  <Button onClick={handleAddImage} variant="outline" size="sm">
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {formData.images.map((img, idx) => (
-                    <div key={idx} className="relative group">
-                      <Image
-                        src={img}
-                        height={200}
-                        width={200}
-                        alt={`Product ${idx + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border border-slate-200"
-                      />
-                      <button
-                        onClick={() => handleRemoveImage(idx)}
-                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Variants */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-slate-900">
-                    Variants
-                  </h3>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-slate-600">
-                      {hasVariants ? "Enabled" : "Disabled (O/S)"}
-                    </span>
+              <div className="grid grid-cols-2 gap-3">
+                {formData.images.map((img, idx) => (
+                  <div key={idx} className="relative group">
+                    <Image
+                      src={img}
+                      height={200}
+                      width={200}
+                      alt={`Product ${idx + 1}`}
+                      className="w-full h-32 object-cover rounded-lg border border-slate-200"
+                    />
                     <button
-                      onClick={() => handleToggleVariants(!hasVariants)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        hasVariants ? "bg-slate-900" : "bg-slate-300"
-                      }`}
+                      onClick={() => handleRemoveImage(idx)}
+                      className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          hasVariants ? "translate-x-6" : "translate-x-1"
-                        }`}
-                      />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Variants */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Variants
+                </h3>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-slate-600">
+                    {hasVariants ? "Enabled" : "Disabled (O/S)"}
+                  </span>
+                  <button
+                    onClick={() => handleToggleVariants(!hasVariants)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      hasVariants ? "bg-slate-900" : "bg-slate-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        hasVariants ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
                 </div>
-
-                {hasVariants ? (
-                  <div className="grid gap-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                          Size
-                        </label>
-                        <Input
-                          type="text"
-                          name="size"
-                          value={currentVariant.size}
-                          onChange={handleVariantChange}
-                          placeholder="e.g., M, L, XL"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                          Color
-                        </label>
-                        <Input
-                          type="text"
-                          name="color"
-                          value={currentVariant.color}
-                          onChange={handleVariantChange}
-                          placeholder="e.g., Blue, Red"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                          Printful Variant ID *
-                        </label>
-                        <Input
-                          type="number"
-                          name="printfulVariantId"
-                          value={currentVariant.printfulVariantId}
-                          onChange={handleVariantChange}
-                          placeholder="e.g., 12345"
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                          Variant Price (optional, uses base price if empty)
-                        </label>
-                        <Input
-                          type="number"
-                          name="price"
-                          value={currentVariant.price}
-                          onChange={handleVariantChange}
-                          placeholder="0.00"
-                          step="0.01"
-                          min="0"
-                        />
-                      </div>
-                    </div>
-
-                    <Button
-                      onClick={handleAddVariant}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Variant
-                    </Button>
-
-                    {/* Variants */}
-                    <div className="space-y-2">
-                      {variants.map((variant, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg"
-                        >
-                          <div className="text-sm">
-                            <p className="font-medium text-slate-900">
-                              {variant.size && variant.color
-                                ? `${variant.size} - ${variant.color}`
-                                : variant.size
-                                ? `Size: ${variant.size}`
-                                : variant.color
-                                ? `Color: ${variant.color}`
-                                : "Variant"}
-                            </p>
-                            <p className="text-slate-600">
-                              ID: {variant.printfulVariantId} | Price: $
-                              {variant.price.toFixed(2)}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => handleRemoveVariant(idx)}
-                            className="text-red-500 hover:text-red-700 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                    <p className="text-sm text-slate-600">
-                      This product will be listed as One Size (O/S) with no
-                      variant options.
-                    </p>
-                  </div>
-                )}
               </div>
 
-              <Button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="btn-primary w-full"
-                size="lg"
-              >
-                {loading ? "Creating Product..." : "Create Product"}
-              </Button>
+              {hasVariants ? (
+                <div className="grid gap-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Size
+                      </label>
+                      <Input
+                        type="text"
+                        name="size"
+                        value={currentVariant.size}
+                        onChange={handleVariantChange}
+                        placeholder="e.g., M, L, XL"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Color
+                      </label>
+                      <Input
+                        type="text"
+                        name="color"
+                        value={currentVariant.color}
+                        onChange={handleVariantChange}
+                        placeholder="e.g., Blue, Red"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Printful Variant ID *
+                    </label>
+                    <Input
+                      type="number"
+                      name="printfulVariantId"
+                      value={currentVariant.printfulVariantId}
+                      onChange={handleVariantChange}
+                      placeholder="e.g., 12345"
+                      required
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleAddVariant}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Variant
+                  </Button>
+
+                  {/* Variants */}
+                  <div className="space-y-2">
+                    {variants.map((variant, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg"
+                      >
+                        <div className="text-sm">
+                          <p className="font-medium text-slate-900">
+                            {variant.size && variant.color
+                              ? `${variant.size} - ${variant.color}`
+                              : variant.size
+                              ? `Size: ${variant.size}`
+                              : variant.color
+                              ? `Color: ${variant.color}`
+                              : "Variant"}
+                          </p>
+                          <p className="text-slate-600">
+                            ID: {variant.printfulVariantId} | Price: $
+                            {variant.price.toFixed(2)}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleRemoveVariant(idx)}
+                          className="text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                  <p className="text-sm text-slate-600">
+                    This product will be listed as One Size (O/S) with no
+                    variant options.
+                  </p>
+                </div>
+              )}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+
+            <Button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="btn-primary w-full"
+              size="lg"
+            >
+              {loading ? "Creating Product..." : "Create Product"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
